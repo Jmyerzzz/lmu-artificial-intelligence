@@ -5,56 +5,32 @@ Specifies a Propositional Logic Clause formatted specifically
 for Grid Maze Pathfinding problems. Clauses are a disjunction of
 MazePropositions (2-tuples of (symbol, location)) mapped to
 their negated status in the sentence.
+
+Jackson Myers
+Basil Latif
 '''
 import unittest
 
 class MazeClause:
 
     def __init__(self, props):
-        """
-        Constructor parameterized by the propositions within this clause;
-        argument props is a list of MazeClauses:
-        [("P", (1, 1)), ("B", (1, 2)), ...]
-        """
         self.props = {}
         self.valid = False
-
         for prop in props:
             if prop[0] in self.props and self.props[prop[0]] != prop[1]:
                 self.props, self.valid = {}, True
-                break;
-            self.props[0] = prop[1]
+                break
+            self.props[prop[0]] = prop[1]
 
     def get_prop(self, prop):
-        """
-        Returns:
-          - None if the requested prop is not in the clause
-          - True if the requested prop is positive in the clause
-          - False if the requested prop is negated in the clause
-        """
-
         if prop in self.props:
             return self.props[prop]
         return None
 
-
     def is_valid(self):
-        """
-        Returns:
-          - True if this clause is logically equivalent with True
-          - False otherwise
-        """
-
         return self.valid
 
     def is_empty(self):
-        """
-        Returns:
-          - True if this is the Empty Clause
-          - False otherwise
-        (NB: valid clauses are not empty)
-        """
-
         return not self.valid and not self.props
 
     def __eq__(self, other):
@@ -72,12 +48,6 @@ class MazeClause:
         # lookup in a set
         return hash(frozenset(self.props.items()))
 
-    # Hint: Specify a __str__ method for ease of debugging (this
-    # will allow you to "print" a MazeClause directly to inspect
-    # its composite literals)
-    # def __str__ (self):
-    #     return ""
-
     @staticmethod
     def resolve(c1, c2):
         """
@@ -87,8 +57,29 @@ class MazeClause:
         inference engine)
         """
         results = set()
-        # TODO: This is currently implemented incorrectly; see
-        # spec for details!
+
+        compProp = None
+        for prop in c1.props:
+            c2Equiv = c2.get_prop(prop)
+            if c2Equiv == None:
+                continue
+            if not c1.props[prop] == c2Equiv:
+                compProp = prop
+                break
+        if not compProp:
+            return results
+
+        resolutionProps = []
+        for prop, value in c1.props.items():
+            if prop != compProp:
+                resolutionProps.append((prop, value))
+        for prop, value in c2.props.items():
+            if prop != compProp:
+                resolutionProps.append((prop, value))
+
+        newMazeClause = MazeClause(resolutionProps)
+        if not newMazeClause.is_valid():
+            results.add(newMazeClause)
         return results
 
 

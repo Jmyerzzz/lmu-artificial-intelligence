@@ -4,9 +4,14 @@ maze_knowledge_base.py
 Specifies a simple, Conjunctive Normal Form Propositional
 Logic Knowledge Base for use in Grid Maze pathfinding problems
 with side-information.
+
+Jackson Myers
+Basil Latif
 '''
 from maze_clause import MazeClause
+import itertools
 import unittest
+
 
 class MazeKnowledgeBase:
 
@@ -27,10 +32,24 @@ class MazeKnowledgeBase:
         Given a MazeClause query, returns True if the KB entails
         the query, False otherwise
         """
-        # TODO: Implement resolution inference here!
-        # This is currently implemented incorrectly; see
-        # spec for details!
-        return False
+        negatedQuery = set()
+        for prop, value in query.props.items():
+            q = MazeClause([(prop, not value)])
+            negatedQuery.add(q)
+
+        new = set()
+        clauses = negatedQuery | set(self.clauses)
+
+        while True:
+            combinations = itertools.combinations(clauses, 2)
+            for combination in combinations:
+                resolvents = MazeClause.resolve(combination[0], combination[1])
+                if resolvents and list(resolvents)[0].is_empty():
+                    return True
+                new = new | resolvents
+            if new.issubset(clauses):
+                return False
+            clauses = clauses | new
 
 
 class MazeKnowledgeBaseTests(unittest.TestCase):
